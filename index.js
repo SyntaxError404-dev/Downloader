@@ -6,36 +6,25 @@ const port = 3000;
 
 app.use(cors());
 
-app.get('/download', async (req, res) => {
+app.get('/pin', async (req, res) => {
   try {
-    const { url } = req.query;
+    const { title, search } = req.query;
 
-    if (!url) {
-      return res.status(400).json({ error: 'URL is required' });
+    if (!title || !search) {
+      return res.status(400).json({ error: 'Both title and search query are required' });
     }
 
     const response = await axios({
       method: 'get',
-      url: `https://smfahim.xyz/alldl?url=${encodeURIComponent(url)}`,
+      url: `https://smfahim.xyz/pin?title=${encodeURIComponent(title)}&search=${encodeURIComponent(search)}`,
       responseType: 'json'
     });
 
-    if (response.data && response.data.downloadUrl) {
-      const videoResponse = await axios({
-        method: 'get',
-        url: response.data.downloadUrl,
-        responseType: 'arraybuffer'
-      });
-
-      res.set('Content-Type', 'video/mp4');
-      res.send(Buffer.from(videoResponse.data, 'binary'));
-    } else {
-      res.status(400).json({ error: 'Download link not found' });
-    }
+    res.json(response.data);
 
   } catch (error) {
-    console.error('Error downloading video:', error);
-    res.status(500).json({ error: 'Error downloading video' });
+    console.error('Error fetching Pinterest images:', error);
+    res.status(500).json({ error: 'Error fetching Pinterest images' });
   }
 });
 
